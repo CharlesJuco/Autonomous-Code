@@ -15,7 +15,7 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 
 public class Robot extends TimedRobot {
-  PIDController pid = new PIDController(1, 0.25, 0.5);
+  PIDController pid = new PIDController(1, 0.05, 2);
   WPI_TalonFX left = new WPI_TalonFX(2); // left drive motor
   WPI_TalonFX right = new WPI_TalonFX(0); // right drive motor
   WPI_TalonFX belt = new WPI_TalonFX(1); // belt motor
@@ -40,7 +40,7 @@ public class Robot extends TimedRobot {
   double robotX;
   double robotY;
   double angle; // gyro angle
-  double distance = 1;
+  double distance = 4;
   double error = distance-positionAverage;
 
   @Override

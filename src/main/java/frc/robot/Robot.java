@@ -1,119 +1,181 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.ADIS16448_IMU;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
-/**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
- * project.
- */
-public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-  PIDController pid = new PIDController (1, 0, 0);
-  WPI_TalonFX left = new WPI_TalonFX(2); // left drive motor
-  WPI_TalonFX right = new WPI_TalonFX(0); // left drive motor
-  DifferentialDrive drive = new DifferentialDrive(left, right);
-  double encoderTicksPerMeter = 2048*10.71/(0.0254*6*Math.PI); // theoretical 45812 ticks per meter
 
+public class Robot extends TimedRobot {
+  PIDController pid = new PIDController(1, 0.25, 0.5);
+  WPI_TalonFX left = new WPI_TalonFX(2); // left drive motor
+  WPI_TalonFX right = new WPI_TalonFX(0); // right drive motor
+  WPI_TalonFX belt = new WPI_TalonFX(1); // belt motor
+  WPI_TalonFX intakeInternal = new WPI_TalonFX(3); // internal intake motor
+  WPI_TalonFX intakeExternal = new WPI_TalonFX(4); // external intake motor
+  DifferentialDrive drive = new DifferentialDrive(left, right);
+  ADIS16448_IMU gyro = new ADIS16448_IMU(); // RoboRIO-mounted gyroscope
+  Timer timer = new Timer(); 
+  DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(new Rotation2d(0), 0,0);
+  double encoderTicksPerMeter = 2048*10.71/(0.0254*6*Math.PI); // theoretical 45812 ticks per meter
+  double trackWidth = 0.69474;  // value obtained from SysID
   // motor encoder values
   double positionLeft;
   double positionRight;
   double positionAverage = (positionLeft+positionRight)/2;
-  double distance = 4;
-  /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
-   */
+  double positionBelt;
+  double positionInternalIntake;
+  double positionExternalIntake;
+  double time; // match time
+  // odometry calculated robot position
+  Pose2d robotPosition;
+  double robotX;
+  double robotY;
+  double angle; // gyro angle
+  double distance = 1;
+  double error = distance-positionAverage;
+
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    initializeMotors(); // starts and configures the motors
+    timer.start(); // starts the timer at 0s.
+    gyro.calibrate(); // sets the gyro angle to 0 based on the current robot position 
+    updateVariables(); // updates and publishes variables to shuffleboard
   }
 
-  /**
-   * This function is called every 20 ms, no matter the mode. Use this for items like diagnostics
-   * that you want ran during disabled, autonomous, teleoperated and test.
-   *
-   * <p>This runs after the mode specific periodic functions, but before LiveWindow and
-   * SmartDashboard integrated updating.
-   */
   @Override
   public void robotPeriodic() {}
 
-  /**
-   * This autonomous (along with the chooser code above) shows how to select between different
-   * autonomous modes using the dashboard. The sendable chooser code works with the Java
-   * SmartDashboard. If you prefer the LabVIEW Dashboard, remove all of the chooser code and
-   * uncomment the getString line to get the auto name from the text box below the Gyro
-   *
-   * <p>You can add additional auto modes by adding additional comparisons to the switch structure
-   * below with additional strings. If using the SendableChooser make sure to add them to the
-   * chooser code above as well.
-   */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
+    updateVariables();
   }
 
-  /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
+    updateVariables();
+    drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
   }
 
-  /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {}
 
-  /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {}
 
-  /** This function is called once when the robot is disabled. */
   @Override
   public void disabledInit() {}
 
-  /** This function is called periodically when disabled. */
   @Override
   public void disabledPeriodic() {}
 
-  /** This function is called once when test mode is enabled. */
   @Override
   public void testInit() {}
 
-  /** This function is called periodically during test mode. */
   @Override
   public void testPeriodic() {}
 
-  /** This function is called once when the robot is first started up. */
   @Override
   public void simulationInit() {}
 
-  /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  public void initializeMotors() {
+    motorConfig(left);
+    //PID coefficients
+    left.config_kF(0, 0.046, 30);
+    left.config_kP(0, 0.05, 30);
+    left.config_kI(0, 0.001, 30);
+    left.config_kD(0, 3, 30);
+    left.setNeutralMode(NeutralMode.Coast); 
+
+    motorConfig(right);
+    right.config_kF(0, 0.046, 30);
+    right.config_kP(0, 0.05, 30);
+    right.config_kI(0, 0.001, 30);
+    right.config_kD(0, 3, 30);
+    right.setInverted(true);
+    right.setNeutralMode(NeutralMode.Coast); 
+
+    motorConfig(belt);
+    intakeInternal.config_kF(0, 0, 30);
+    intakeInternal.config_kP(0, 1, 30);
+    intakeInternal.config_kI(0, 0.005, 30);
+    intakeInternal.config_kD(0, 10, 30);
+    belt.configMotionCruiseVelocity(20000, 30);
+    belt.configMotionAcceleration(6000, 30);
+    belt.setNeutralMode(NeutralMode.Brake); 
+
+    motorConfig(intakeInternal);
+    intakeInternal.config_kF(0, 0, 30);
+    intakeInternal.config_kP(0, 1, 30);
+    intakeInternal.config_kI(0, 0.005, 30);
+    intakeInternal.config_kD(0, 10, 30);
+    intakeInternal.configMotionCruiseVelocity(20000, 30);
+    intakeInternal.configMotionAcceleration(6000, 30);
+    intakeInternal.setNeutralMode(NeutralMode.Brake);
+
+    motorConfig(intakeExternal);
+    intakeExternal.config_kF(0, 0, 30);
+    intakeExternal.config_kP(0, 1, 30);
+    intakeExternal.config_kI(0, 0.005, 30);
+    intakeExternal.config_kD(0, 10, 30);
+    intakeExternal.configMotionCruiseVelocity(20000, 30);
+    intakeExternal.configMotionAcceleration(6000, 30);
+    intakeExternal.setNeutralMode(NeutralMode.Brake);
+  }
+
+  // runs manufacturer recommended startup commands for Falcon 500 motors. Should be run at startup for all motors.
+  public void motorConfig(WPI_TalonFX motor) {
+    motor.configFactoryDefault();
+    motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0 , 30);
+    motor.configNeutralDeadband(0.001, 30);
+    motor.setSensorPhase(false);
+    motor.setInverted(false);
+    motor.setStatusFramePeriod(StatusFrameEnhanced.Status_13_Base_PIDF0, 10, 30);
+    motor.setStatusFramePeriod(StatusFrameEnhanced.Status_10_MotionMagic, 10, 30);
+    motor.configNominalOutputForward(0, 30);
+    motor.configNominalOutputReverse(0, 30);
+    motor.configPeakOutputForward(1, 30);
+    motor.configPeakOutputReverse(-1, 30);
+    motor.selectProfileSlot(0, 0);
+    motor.configOpenloopRamp(1.5);
+    motor.setSelectedSensorPosition(0, 0, 30);
+  }
+  
+  // initializes variables and publishes values on dashboard
+  public void updateVariables() {
+    // updates variables
+    positionLeft = left.getSelectedSensorPosition(0)/encoderTicksPerMeter;
+    positionRight = right.getSelectedSensorPosition(0)/encoderTicksPerMeter;
+    positionBelt = belt.getSelectedSensorPosition(0);
+    positionInternalIntake = intakeInternal.getSelectedSensorPosition(0);
+    positionExternalIntake = intakeExternal.getSelectedSensorPosition(0);
+    time = timer.get();
+    angle = -gyro.getGyroAngleZ();
+    odometry.update(new Rotation2d(angle*Math.PI/180), positionLeft, positionRight);
+    robotPosition = odometry.getPoseMeters();
+    robotX = robotPosition.getX();
+    robotY = robotPosition.getY();
+    
+    // publishes updated variables to the dashboard
+    SmartDashboard.putNumber("Encoder (Left)", positionLeft);
+    SmartDashboard.putNumber("Encoder (Right)", positionRight);
+    SmartDashboard.putNumber("Encoder (Belt)", positionBelt);
+    SmartDashboard.putNumber("Encoder (External Intake)", positionExternalIntake);
+    SmartDashboard.putNumber("Encoder (Internal Intake)", positionInternalIntake);
+    SmartDashboard.putNumber("Clock",  time);
+    SmartDashboard.putNumber("Angle", angle);
+    SmartDashboard.putNumber("RobotX",  robotX);
+    SmartDashboard.putNumber("RobotY", robotY);
+  }
 }

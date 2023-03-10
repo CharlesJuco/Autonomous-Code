@@ -42,6 +42,7 @@ public class Robot extends TimedRobot {
   double angle; // gyro angle
   double distance = 4;
   double error = distance-positionAverage;
+  int autoStage = 1;
 
   @Override
   public void robotInit() {
@@ -62,7 +63,17 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     updateVariables();
-    drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
+    if (autoStage == 1) {
+      drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
+      autoStage ++;
+    }
+    if (autoStage == 2) {
+      drive.arcadeDrive(0,0.5);
+    }
+    if  (angle >= 90 && autoStage == 2) {
+      drive.arcadeDrive(0, 0);
+      autoStage ++;
+    }
   }
 
   @Override

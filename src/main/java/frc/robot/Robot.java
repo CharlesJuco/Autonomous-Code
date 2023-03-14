@@ -183,6 +183,7 @@ public class Robot extends TimedRobot {
     // publishes updated variables to the dashboard
     SmartDashboard.putNumber("Encoder (Left)", positionLeft);
     SmartDashboard.putNumber("Encoder (Right)", positionRight);
+    SmartDashboard.putNumber("Encoder (Average)", positionAverage);
     SmartDashboard.putNumber("Encoder (Belt)", positionBelt);
     SmartDashboard.putNumber("Encoder (External Intake)", positionExternalIntake);
     SmartDashboard.putNumber("Encoder (Internal Intake)", positionInternalIntake);

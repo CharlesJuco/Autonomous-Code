@@ -56,23 +56,24 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     updateVariables();
+    System.out.println("Stage");
     if (autoStage == 1) {
       drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
-    }
-    if ((positionLeft+positionRight)/2 >= distance && autoStage == 1) {
-      autoStage ++;
+      if ((positionLeft+positionRight)/2 >= distance) {
+        autoStage ++;
+      }
     }
     if (autoStage == 2) {
       drive.arcadeDrive(0,0.5);
-    }
-    if (angle >= 90 && autoStage == 2) {
-      autoStage ++;
+      if (angle >= 90) {
+        autoStage ++;
+      }
     }
     if (autoStage == 3) {
       drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, 1), 0);
-    }
-    if ((positionLeft+positionRight)/2 >= 5 && autoStage == 3) {
-      autoStage ++;
+      if ((positionLeft+positionRight)/2 >= 5) {
+        autoStage ++;
+      }
     }
   }
 

@@ -17,9 +17,6 @@ public class Robot extends TimedRobot {
   PIDController pid = new PIDController(1, 0.1, 2);
   WPI_TalonFX left = new WPI_TalonFX(2); // left drive motor
   WPI_TalonFX right = new WPI_TalonFX(0); // right drive motor
-  WPI_TalonFX belt = new WPI_TalonFX(1); // belt motor
-  WPI_TalonFX intakeInternal = new WPI_TalonFX(3); // internal intake motor
-  WPI_TalonFX intakeExternal = new WPI_TalonFX(4); // external intake motor
   DifferentialDrive drive = new DifferentialDrive(left, right);
   ADIS16448_IMU gyro = new ADIS16448_IMU(); // RoboRIO-mounted gyroscope
   Timer timer = new Timer(); 
@@ -30,9 +27,6 @@ public class Robot extends TimedRobot {
   double positionLeft;
   double positionRight;
   double positionAverage = (positionLeft+positionRight)/2;
-  double positionBelt;
-  double positionInternalIntake;
-  double positionExternalIntake;
   double time; // match time
   // odometry calculated robot position
   Pose2d robotPosition;

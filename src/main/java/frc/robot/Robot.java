@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
@@ -72,8 +71,13 @@ public class Robot extends TimedRobot {
     if (autoStage == 2) {
       drive.arcadeDrive(0,0.5);
     }
-    if  (angle >= 90 && autoStage == 2) {
-      drive.arcadeDrive(0, 0);
+    if (angle >= 90 && autoStage == 2) {
+      autoStage ++;
+    }
+    if (autoStage == 3) {
+      drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, 1), 0);
+    }
+    if ((positionLeft+positionRight)/2 >= 5 && autoStage == 3) {
       autoStage ++;
     }
   }
@@ -102,50 +106,7 @@ public class Robot extends TimedRobot {
   @Override
   public void simulationPeriodic() {}
 
-  public void initializeMotors() {
-    motorConfig(left);
-    //PID coefficients
-    left.config_kF(0, 0.046, 30);
-    left.config_kP(0, 0.05, 30);
-    left.config_kI(0, 0.001, 30);
-    left.config_kD(0, 3, 30);
-    left.setNeutralMode(NeutralMode.Coast); 
-
-    motorConfig(right);
-    right.config_kF(0, 0.046, 30);
-    right.config_kP(0, 0.05, 30);
-    right.config_kI(0, 0.001, 30);
-    right.config_kD(0, 3, 30);
-    right.setInverted(true);
-    right.setNeutralMode(NeutralMode.Coast); 
-
-    motorConfig(belt);
-    intakeInternal.config_kF(0, 0, 30);
-    intakeInternal.config_kP(0, 1, 30);
-    intakeInternal.config_kI(0, 0.005, 30);
-    intakeInternal.config_kD(0, 10, 30);
-    belt.configMotionCruiseVelocity(20000, 30);
-    belt.configMotionAcceleration(6000, 30);
-    belt.setNeutralMode(NeutralMode.Brake); 
-
-    motorConfig(intakeInternal);
-    intakeInternal.config_kF(0, 0, 30);
-    intakeInternal.config_kP(0, 1, 30);
-    intakeInternal.config_kI(0, 0.005, 30);
-    intakeInternal.config_kD(0, 10, 30);
-    intakeInternal.configMotionCruiseVelocity(20000, 30);
-    intakeInternal.configMotionAcceleration(6000, 30);
-    intakeInternal.setNeutralMode(NeutralMode.Brake);
-
-    motorConfig(intakeExternal);
-    intakeExternal.config_kF(0, 0, 30);
-    intakeExternal.config_kP(0, 1, 30);
-    intakeExternal.config_kI(0, 0.005, 30);
-    intakeExternal.config_kD(0, 10, 30);
-    intakeExternal.configMotionCruiseVelocity(20000, 30);
-    intakeExternal.configMotionAcceleration(6000, 30);
-    intakeExternal.setNeutralMode(NeutralMode.Brake);
-  }
+  public void initializeMotors() {}
 
   // runs manufacturer recommended startup commands for Falcon 500 motors. Should be run at startup for all motors.
   public void motorConfig(WPI_TalonFX motor) {
@@ -170,9 +131,7 @@ public class Robot extends TimedRobot {
     // updates variables
     positionLeft = left.getSelectedSensorPosition(0)/encoderTicksPerMeter;
     positionRight = right.getSelectedSensorPosition(0)/encoderTicksPerMeter;
-    positionBelt = belt.getSelectedSensorPosition(0);
-    positionInternalIntake = intakeInternal.getSelectedSensorPosition(0);
-    positionExternalIntake = intakeExternal.getSelectedSensorPosition(0);
+    positionAverage = (positionLeft+positionRight)/2;
     time = timer.get();
     angle = -gyro.getGyroAngleZ();
     odometry.update(new Rotation2d(angle*Math.PI/180), positionLeft, positionRight);
@@ -183,13 +142,11 @@ public class Robot extends TimedRobot {
     // publishes updated variables to the dashboard
     SmartDashboard.putNumber("Encoder (Left)", positionLeft);
     SmartDashboard.putNumber("Encoder (Right)", positionRight);
-    SmartDashboard.putNumber("Encoder (Average)", positionAverage);
-    SmartDashboard.putNumber("Encoder (Belt)", positionBelt);
-    SmartDashboard.putNumber("Encoder (External Intake)", positionExternalIntake);
-    SmartDashboard.putNumber("Encoder (Internal Intake)", positionInternalIntake);
+    SmartDashboard.putNumber("Position", positionAverage);
     SmartDashboard.putNumber("Clock",  time);
     SmartDashboard.putNumber("Angle", angle);
     SmartDashboard.putNumber("RobotX",  robotX);
     SmartDashboard.putNumber("RobotY", robotY);
+    SmartDashboard.putNumber("Stage", autoStage);
   }
 }

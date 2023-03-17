@@ -33,8 +33,8 @@ public class Robot extends TimedRobot {
   double robotX;
   double robotY;
   double angle; // gyro angle
-  double distance = 4;
-  double error = distance-positionAverage;
+  double setpoint = 4;
+  double error = setpoint-positionAverage;
   int autoStage = 1;
 
   @Override
@@ -58,8 +58,8 @@ public class Robot extends TimedRobot {
     updateVariables();
     System.out.println("Stage");
     if (autoStage == 1) {
-      drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, distance), 0);
-      if ((positionLeft+positionRight)/2 >= distance) {
+      drive.arcadeDrive(pid.calculate((positionLeft+positionRight)/2, setpoint), 0);
+      if ((positionLeft+positionRight)/2 >= setpoint) {
         autoStage ++;
       }
     }

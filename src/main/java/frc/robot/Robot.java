@@ -41,7 +41,8 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     initializeMotors(); // starts and configures the motors
     timer.start(); // starts the timer at 0s.
-    gyro.calibrate(); // sets the gyro angle to 0 based on the current robot position 
+    gyro.calibrate(); // sets the gyro angle to 0 based on the current robot position
+    right.setInverted(true);
     updateVariables(); // updates and publishes variables to shuffleboard
   }
 
@@ -63,6 +64,7 @@ public class Robot extends TimedRobot {
         autoStage ++;
       }
     }
+    /*
     if (autoStage == 2) {
       drive.arcadeDrive(0,0.5);
       if (angle >= 90) {
@@ -75,6 +77,7 @@ public class Robot extends TimedRobot {
         autoStage ++;
       }
     }
+     */
   }
 
   @Override
@@ -138,9 +141,9 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("Encoder (Left)", positionLeft);
     SmartDashboard.putNumber("Encoder (Right)", positionRight);
     SmartDashboard.putNumber("Position", positionAverage);
-    SmartDashboard.putNumber("Clock",  time);
+    SmartDashboard.putNumber("Clock", time);
     SmartDashboard.putNumber("Angle", angle);
-    SmartDashboard.putNumber("RobotX",  robotX);
+    SmartDashboard.putNumber("RobotX", robotX);
     SmartDashboard.putNumber("RobotY", robotY);
     SmartDashboard.putNumber("Stage", autoStage);
   }

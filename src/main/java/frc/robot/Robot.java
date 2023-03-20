@@ -95,8 +95,8 @@ public class Robot extends TimedRobot {
     }
     /*
     if (autoStage == 3) {
-      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, setpoint + 1), 0);
-      if ((positionLeft+positionRight)/2 >= 5) {
+      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, setpoint+1), 0);
+      if ((positionLeft+positionRight)/2 >= setpoint+1) {
         autoStage ++;
       }
     }

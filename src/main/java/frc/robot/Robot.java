@@ -76,14 +76,14 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousPeriodic() {
     updateVariables();
-    /*
+    // Robot moves 2 meters forward
     if (autoStage == 1) {
-      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, setpoint), 0);
+      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, 2), 0);
       if ((positionLeft+positionRight)/2 >= setpoint) {
         autoStage ++;
       }
     }
-    */
+    // Robot turns 90 degrees counter-clockwise
     if (autoStage == 2) {
       drive.arcadeDrive(0,(pidRotate.calculate(angle, 90)));
       if (angle >= 90) {
@@ -94,9 +94,17 @@ public class Robot extends TimedRobot {
       drive.feed();
     }
     /*
+    // Robot moves 1 meter forward
     if (autoStage == 3) {
-      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, setpoint+1), 0);
+      drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, 2+1), 0);
       if ((positionLeft+positionRight)/2 >= setpoint+1) {
+        autoStage ++;
+      }
+    }
+    // Robot turns 180 degrees
+    if (autoStage == 4) {
+      drive.arcadeDrive(0,(pidRotate.calculate(angle, 90+180)));
+      if(angle >= 90+180) {
         autoStage ++;
       }
     }

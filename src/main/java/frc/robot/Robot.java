@@ -49,7 +49,6 @@ public class Robot extends TimedRobot {
   double robotY;
   double angle; // gyro angle
   int autoStage = 2;
-  double setpoint = 4;
   PIDController pidSpeed = new PIDController(1, 0.03, 1.5);
   PIDController pidRotate = new PIDController(0.2, 0.01, 0.1);
 

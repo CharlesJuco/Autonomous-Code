@@ -49,8 +49,8 @@ public class Robot extends TimedRobot {
   double robotY;
   double angle; // gyro angle
   int autoStage = 1;
-  PIDController pidSpeed = new PIDController(1, 0.03, 1.5);
-  PIDController pidRotate = new PIDController(0.2, 0.01, 0.1);
+  PIDController pidSpeed = new PIDController(1, 0.2, 1);
+  PIDController pidRotate = new PIDController(0.1, 0.1, 0.05);
 
   @Override
   public void robotInit() {
@@ -86,13 +86,10 @@ public class Robot extends TimedRobot {
     if (autoStage == 2) {
       drive.arcadeDrive(0,(pidRotate.calculate(angle, 90)));
       if (angle >= 90) {
+        drive.arcadeDrive(0,0);
         autoStage ++;
       }
     }
-    else {
-      drive.feed();
-    }
-    /*
     // Robot moves 1 meter forward
     if (autoStage == 3) {
       drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, 2+1), 0);
@@ -104,10 +101,13 @@ public class Robot extends TimedRobot {
     if (autoStage == 4) {
       drive.arcadeDrive(0,(pidRotate.calculate(angle, 90+180)));
       if(angle >= 90+180) {
+        drive.arcadeDrive(0,0);
         autoStage ++;
       }
     }
-    */
+    else {
+      drive.feed();
+    }
   }
 
   @Override

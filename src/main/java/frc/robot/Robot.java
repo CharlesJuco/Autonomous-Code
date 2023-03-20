@@ -78,7 +78,7 @@ public class Robot extends TimedRobot {
     // Robot moves 2 meters forward
     if (autoStage == 1) {
       drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, 2), 0);
-      if ((positionLeft+positionRight)/2 >= setpoint) {
+      if ((positionLeft+positionRight)/2 >= 2) {
         autoStage ++;
       }
     }
@@ -96,7 +96,7 @@ public class Robot extends TimedRobot {
     // Robot moves 1 meter forward
     if (autoStage == 3) {
       drive.arcadeDrive(pidSpeed.calculate((positionLeft+positionRight)/2, 2+1), 0);
-      if ((positionLeft+positionRight)/2 >= setpoint+1) {
+      if ((positionLeft+positionRight)/2 >= 2+1) {
         autoStage ++;
       }
     }

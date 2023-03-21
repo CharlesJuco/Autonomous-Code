@@ -84,7 +84,7 @@ public class Robot extends TimedRobot {
     }
     // Robot turns 90 degrees counter-clockwise
     if (autoStage == 2) {
-      drive.arcadeDrive(0,(pidRotate.calculate(angle, 90)));
+      drive.arcadeDrive(0,(pidRotate.calculate(angle, 0.25)));
       if (angle >= 90) {
         drive.arcadeDrive(0,0);
         autoStage ++;
@@ -99,7 +99,7 @@ public class Robot extends TimedRobot {
     }
     // Robot turns 180 degrees
     if (autoStage == 4) {
-      drive.arcadeDrive(0,(pidRotate.calculate(angle, 90+180)));
+      drive.arcadeDrive(0,(pidRotate.calculate(angle, 0.25)));
       if(angle >= 90+180) {
         drive.arcadeDrive(0,0);
         autoStage ++;

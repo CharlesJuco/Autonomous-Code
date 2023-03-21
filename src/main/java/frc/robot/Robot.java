@@ -15,6 +15,7 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.StatusFrameEnhanced;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.kauailabs.navx.frc.AHRS;
 
 public class Robot extends TimedRobot {
   WPI_TalonFX left = new WPI_TalonFX(2); // left drive motor
@@ -24,7 +25,6 @@ public class Robot extends TimedRobot {
   WPI_TalonFX intakeExternal = new WPI_TalonFX(4); // external intake motor
   DifferentialDrive drive = new DifferentialDrive(left, right);
   XboxController controller = new XboxController(0);
-  ADIS16448_IMU gyro = new ADIS16448_IMU(); // RoboRIO-mounted gyroscope
   Timer timer = new Timer(); 
   DifferentialDriveOdometry odometry = new DifferentialDriveOdometry(new Rotation2d(0), 0,0);
   double encoderTicksPerMeter = 2048*10.71/(0.0254*6*Math.PI); // theoretical 45812 ticks per meter
@@ -50,7 +50,9 @@ public class Robot extends TimedRobot {
   double angle; // gyro angle
   int autoStage = 1;
   PIDController pidSpeed = new PIDController(1, 0.2, 1);
-  PIDController pidRotate = new PIDController(0.1, 0.1, 0.05);
+  PIDController pidRotate = new PIDController(0.05, 0.2, 0.05);
+
+  AHRS gyro = new AHRS();
 
   @Override
   public void robotInit() {
@@ -58,6 +60,8 @@ public class Robot extends TimedRobot {
     initializeMotors(); // starts and configures the motors
     timer.start(); // starts the timer at 0s.
     gyro.calibrate(); // sets the gyro angle to 0 based on the current robot position 
+    Timer.delay(2);
+    gyro.zeroYaw();
     updateVariables(); // updates and publishes variables to shuffleboard
   }
 
@@ -84,7 +88,7 @@ public class Robot extends TimedRobot {
     }
     // Robot turns 90 degrees counter-clockwise
     if (autoStage == 2) {
-      drive.arcadeDrive(0,(pidRotate.calculate(angle, 0.25)));
+      drive.arcadeDrive(0,(pidRotate.calculate(angle, 90)));
       if (angle >= 90) {
         drive.arcadeDrive(0,0);
         autoStage ++;
@@ -99,7 +103,7 @@ public class Robot extends TimedRobot {
     }
     // Robot turns 180 degrees
     if (autoStage == 4) {
-      drive.arcadeDrive(0,(pidRotate.calculate(angle, 0.25)));
+      drive.arcadeDrive(0,(pidRotate.calculate(angle, 90)));
       if(angle >= 90+180) {
         drive.arcadeDrive(0,0);
         autoStage ++;
@@ -228,7 +232,7 @@ public class Robot extends TimedRobot {
     positionInternalIntake = intakeInternal.getSelectedSensorPosition(0);
     positionExternalIntake = intakeExternal.getSelectedSensorPosition(0);
     time = timer.get();
-    angle = -gyro.getGyroAngleZ();
+    angle = -gyro.getYaw();
 
     odometry.update(new Rotation2d(angle*Math.PI/180), positionLeft, positionRight);
     robotPosition = odometry.getPoseMeters();
@@ -252,5 +256,6 @@ public class Robot extends TimedRobot {
     SmartDashboard.putNumber("RobotX",  robotX);
     SmartDashboard.putNumber("RobotY", robotY);
     SmartDashboard.putNumber("Position", (positionLeft+positionRight)/2);
+    SmartDashboard.putNumber("Stage", autoStage);
   }
 }

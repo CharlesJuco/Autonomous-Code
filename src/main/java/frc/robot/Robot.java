@@ -86,13 +86,15 @@ public class Robot extends TimedRobot {
   double positionTopArm;
   double positionBottomArm;
 
+  // Autonomous Variables
   double angle;
   double time;
-  double yaw;
   double pitch;
   int autoStage = 2;
   PIDController pidSpeed = new PIDController(1, 0.2, 1);
   PIDController pidRotate = new PIDController(0.04, 0, 0);
+
+  double yaw;
 
   @Override
   public void robotInit() {

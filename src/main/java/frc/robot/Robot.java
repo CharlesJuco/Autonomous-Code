@@ -92,7 +92,7 @@ public class Robot extends TimedRobot {
   double pitch;
   int autoStage = 2;
   PIDController pidSpeed = new PIDController(1, 0.2, 1);
-  PIDController pidRotate = new PIDController(0.04, 0, 0);
+  PIDController pidRotate = new PIDController(0.01, 0.01, 0.01);
 
   double yaw;
 

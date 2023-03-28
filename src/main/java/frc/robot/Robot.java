@@ -157,6 +157,7 @@ public class Robot extends TimedRobot {
       }
     } else if (autoStage == 5) {
         closeClaw();
+        autoStage++;
     } else {
       drive.arcadeDrive(0, 0);
     }

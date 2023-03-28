@@ -155,7 +155,7 @@ public class Robot extends TimedRobot {
       if (armAtSetpoint) {
         autoStage++;
       }
-    } else if (autoStage == 5) {
+    } else if (autoStage == 5) { // Closes the claw
         closeClaw();
         autoStage++;
     } else {
